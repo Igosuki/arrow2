@@ -6,10 +6,10 @@ use arrow_format::ipc;
 use arrow_format::ipc::Schema::MetadataVersion;
 
 use crate::array::*;
+use crate::columns::Columns;
 use crate::datatypes::{DataType, Field, Schema};
 use crate::error::{ArrowError, Result};
 use crate::io::ipc::{IpcField, IpcSchema};
-use crate::record_batch::RecordBatch;
 
 use super::deserialize::{read, skip};
 use super::Dictionaries;
@@ -82,12 +82,12 @@ pub fn read_record_batch<R: Read + Seek>(
     batch: ipc::Message::RecordBatch,
     schema: Arc<Schema>,
     ipc_schema: &IpcSchema,
-    projection: Option<(&[usize], Arc<Schema>)>,
+    projection: Option<&[usize]>,
     dictionaries: &Dictionaries,
     version: MetadataVersion,
     reader: &mut R,
     block_offset: u64,
-) -> Result<RecordBatch> {
+) -> Result<Columns<Arc<dyn Array>>> {
     assert_eq!(schema.fields().len(), ipc_schema.fields.len());
     let buffers = batch.buffers().ok_or_else(|| {
         ArrowError::OutOfSpec("Unable to get buffers from IPC RecordBatch".to_string())
@@ -99,15 +99,13 @@ pub fn read_record_batch<R: Read + Seek>(
 
     let mut field_nodes = field_nodes.iter().collect::<VecDeque<_>>();
 
-    let (schema, columns) = if let Some(projection) = projection {
-        let projected_schema = projection.1.clone();
-
+    let columns = if let Some(projection) = projection {
         let projection = ProjectionIter::new(
-            projection.0,
+            projection,
             schema.fields().iter().zip(ipc_schema.fields.iter()),
         );
 
-        let arrays = projection
+        projection
             .map(|maybe_field| match maybe_field {
                 ProjectionResult::Selected((field, ipc_field)) => Some(read(
                     &mut field_nodes,
@@ -127,10 +125,9 @@ pub fn read_record_batch<R: Read + Seek>(
                 }
             })
             .flatten()
-            .collect::<Result<Vec<_>>>()?;
-        (projected_schema, arrays)
+            .collect::<Result<Vec<_>>>()?
     } else {
-        let arrays = schema
+        schema
             .fields()
             .iter()
             .zip(ipc_schema.fields.iter())
@@ -148,10 +145,9 @@ pub fn read_record_batch<R: Read + Seek>(
                     version,
                 )
             })
-            .collect::<Result<Vec<_>>>()?;
-        (schema.clone(), arrays)
+            .collect::<Result<Vec<_>>>()?
     };
-    RecordBatch::try_new(schema, columns)
+    Columns::try_new(columns)
 }
 
 fn find_first_dict_field_d<'a>(
@@ -242,7 +238,7 @@ pub fn read_dictionary<R: Read + Seek>(
             };
             assert_eq!(ipc_schema.fields.len(), schema.fields().len());
             // Read a single column
-            let record_batch = read_record_batch(
+            let columns = read_record_batch(
                 batch.data().unwrap(),
                 schema,
                 &ipc_schema,
@@ -252,7 +248,8 @@ pub fn read_dictionary<R: Read + Seek>(
                 reader,
                 block_offset,
             )?;
-            Some(record_batch.column(0).clone())
+            let mut arrays = columns.into_arrays();
+            Some(arrays.pop().unwrap())
         }
         _ => None,
     }
