@@ -65,5 +65,5 @@ where
     // return the reader seek back to the start
     reader.seek(position).await?;
 
-    Ok(Schema::new(fields))
+    Ok(fields.into())
 }

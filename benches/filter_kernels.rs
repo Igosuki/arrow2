@@ -125,10 +125,10 @@ fn add_benchmark(c: &mut Criterion) {
 
     let data_array = create_primitive_array::<f32>(size, 0.0);
 
-    let columns = Chunk::try_new(vec![Arc::new(data_array)]).unwrap();
+    let columns = Chunk::try_new(vec![&data_array as &dyn Array]).unwrap();
 
-    c.bench_function("filter single record batch", |b| {
-        b.iter(|| filter_record_batch(&columns, &filter_array))
+    c.bench_function("filter single chunk", |b| {
+        b.iter(|| filter_chunk(&columns, &filter_array))
     });
 }
 

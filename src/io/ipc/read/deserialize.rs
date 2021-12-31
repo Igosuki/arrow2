@@ -30,7 +30,7 @@ pub fn read<R: Read + Seek>(
     version: MetadataVersion,
 ) -> Result<Arc<dyn Array>> {
     use PhysicalType::*;
-    let data_type = field.data_type().clone();
+    let data_type = field.data_type.clone();
 
     match data_type.to_physical_type() {
         Null => {

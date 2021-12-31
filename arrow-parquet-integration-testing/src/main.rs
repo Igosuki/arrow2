@@ -127,7 +127,7 @@ fn main() -> Result<()> {
                 }
             })
             .collect::<Vec<_>>();
-        Schema::new(fields)
+        Schema::from(fields)
     } else {
         schema
     };

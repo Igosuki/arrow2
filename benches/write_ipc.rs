@@ -12,7 +12,7 @@ use arrow2::util::bench_util::{create_boolean_array, create_primitive_array, cre
 
 fn write(array: &dyn Array) -> Result<()> {
     let field = Field::new("c1", array.data_type().clone(), true);
-    let schema = Schema::new(vec![field]);
+    let schema = vec![field].into();
     let columns = Chunk::try_new(vec![clone(array).into()])?;
 
     let writer = Cursor::new(vec![]);

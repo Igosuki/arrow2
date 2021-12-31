@@ -68,7 +68,7 @@ fn infer_basics() -> Result<()> {
 
     assert_eq!(
         schema,
-        Schema::new(vec![
+        Schema::from(vec![
             Field::new("column_1", DataType::Utf8, true),
             Field::new("column_2", DataType::Utf8, true),
             Field::new("column_3", DataType::Utf8, true),
@@ -86,7 +86,7 @@ fn infer_ints() -> Result<()> {
 
     assert_eq!(
         schema,
-        Schema::new(vec![
+        Schema::from(vec![
             Field::new("column_1", DataType::Int64, true),
             Field::new("column_2", DataType::Utf8, true),
             Field::new("column_3", DataType::Int64, true),
