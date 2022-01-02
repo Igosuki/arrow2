@@ -2,8 +2,7 @@ use std::collections::{HashMap, VecDeque};
 use std::io::{Read, Seek};
 use std::sync::Arc;
 
-use arrow_format::ipc;
-use arrow_format::ipc::Schema::MetadataVersion;
+use arrow_format;
 
 use crate::array::*;
 use crate::datatypes::{DataType, Field, Schema};
@@ -79,23 +78,23 @@ impl<'a, A, I: Iterator<Item = A>> Iterator for ProjectionIter<'a, A, I> {
 /// Panics iff the projection is not in increasing order (e.g. `[1, 0]` nor `[0, 1, 1]` are valid)
 #[allow(clippy::too_many_arguments)]
 pub fn read_record_batch<R: Read + Seek>(
-    batch: ipc::Message::RecordBatch,
+    batch: arrow_format::ipc::RecordBatchRef,
     schema: Arc<Schema>,
     ipc_schema: &IpcSchema,
     projection: Option<(&[usize], Arc<Schema>)>,
     dictionaries: &Dictionaries,
-    version: MetadataVersion,
+    version: arrow_format::ipc::MetadataVersion,
     reader: &mut R,
     block_offset: u64,
 ) -> Result<RecordBatch> {
     assert_eq!(schema.fields().len(), ipc_schema.fields.len());
     let buffers = batch
-        .buffers()
+        .buffers()?
         .ok_or_else(|| ArrowError::oos("IPC RecordBatch must contain buffers"))?;
-    let mut buffers: VecDeque<&ipc::Schema::Buffer> = buffers.iter().collect();
+    let mut buffers: VecDeque<arrow_format::ipc::BufferRef> = buffers.iter().collect();
 
     let field_nodes = batch
-        .nodes()
+        .nodes()?
         .ok_or_else(|| ArrowError::oos("IPC RecordBatch must contain field nodes"))?;
     let mut field_nodes = field_nodes.iter().collect::<VecDeque<_>>();
 
@@ -118,7 +117,7 @@ pub fn read_record_batch<R: Read + Seek>(
                     dictionaries,
                     block_offset,
                     ipc_schema.is_little_endian,
-                    batch.compression(),
+                    batch.compression()?,
                     version,
                 )?)),
                 ProjectionResult::NotSelected((field, _)) => {
@@ -145,7 +144,7 @@ pub fn read_record_batch<R: Read + Seek>(
                     dictionaries,
                     block_offset,
                     ipc_schema.is_little_endian,
-                    batch.compression(),
+                    batch.compression()?,
                     version,
                 )
             })
@@ -211,20 +210,20 @@ fn first_dict_field<'a>(
 /// Read the dictionary from the buffer and provided metadata,
 /// updating the `dictionaries` with the resulting dictionary
 pub fn read_dictionary<R: Read + Seek>(
-    batch: ipc::Message::DictionaryBatch,
+    batch: arrow_format::ipc::DictionaryBatchRef,
     fields: &[Field],
     ipc_schema: &IpcSchema,
     dictionaries: &mut Dictionaries,
     reader: &mut R,
     block_offset: u64,
 ) -> Result<()> {
-    if batch.isDelta() {
+    if batch.is_delta()? {
         return Err(ArrowError::NotYetImplemented(
             "delta dictionary batches not supported".to_string(),
         ));
     }
 
-    let id = batch.id();
+    let id = batch.id()?;
     let (first_field, first_ipc_field) = first_dict_field(id, fields, &ipc_schema.fields)?;
 
     // As the dictionary batch does not contain the type of the
@@ -245,13 +244,13 @@ pub fn read_dictionary<R: Read + Seek>(
             // Read a single column
             let record_batch = read_record_batch(
                 batch
-                    .data()
+                    .data()?
                     .ok_or_else(|| ArrowError::oos("The dictionary batch must have data."))?,
                 schema,
                 &ipc_schema,
                 None,
                 dictionaries,
-                MetadataVersion::V5,
+                arrow_format::ipc::MetadataVersion::V5,
                 reader,
                 block_offset,
             )?;
