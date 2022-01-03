@@ -365,6 +365,7 @@ mod equal;
 mod ffi;
 pub mod growable;
 pub mod ord;
+//mod decimal;
 
 pub use display::get_display;
 pub use equal::equal;
@@ -382,6 +383,7 @@ pub use primitive::*;
 pub use struct_::StructArray;
 pub use union::UnionArray;
 pub use utf8::{MutableUtf8Array, Utf8Array, Utf8ValuesIter};
+//pub use decimal::{MutableDecimalArray, DecimalArray};
 
 pub(crate) use self::ffi::offset_buffers_children_dictionary;
 pub(crate) use self::ffi::FromFfi;

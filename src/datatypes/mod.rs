@@ -26,7 +26,7 @@ pub(crate) type Extension = Option<(String, Option<String>)>;
 /// which declares the in-memory representation of data.
 /// The [`DataType::Extension`] is special in that it augments a [`DataType`] with metadata to support custom types.
 /// Use `to_logical_type` to desugar such type and return its correspoding logical type.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum DataType {
     /// Null type
     Null,
@@ -156,7 +156,7 @@ pub enum DataType {
 }
 
 /// Mode of [`DataType::Union`]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum UnionMode {
     /// Dense union
     Dense,
@@ -187,7 +187,7 @@ impl UnionMode {
 }
 
 /// The time units defined in Arrow.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum TimeUnit {
     /// Time in seconds.
     Second,
@@ -200,7 +200,7 @@ pub enum TimeUnit {
 }
 
 /// Interval units defined in Arrow
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum IntervalUnit {
     /// The number of elapsed whole months.
     YearMonth,
