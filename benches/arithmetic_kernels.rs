@@ -9,14 +9,14 @@ use std::ops::{Add, Div};
 
 fn bench_div_scalar<T>(lhs: &PrimitiveArray<T>, rhs: &T)
 where
-    T: NativeArithmetics + Div<Output = T> + NumCast,
+    T: NativeType + NativeArithmetics + Div<Output = T> + NumCast,
 {
     criterion::black_box(div_scalar(lhs, rhs));
 }
 
 fn bench_add<T>(lhs: &PrimitiveArray<T>, rhs: &PrimitiveArray<T>)
 where
-    T: NativeArithmetics + Add<Output = T> + NumCast,
+    T: NativeType + NativeArithmetics + Add<Output = T> + NumCast,
 {
     criterion::black_box(add(lhs, rhs));
 }
