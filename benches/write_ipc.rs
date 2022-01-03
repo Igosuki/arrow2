@@ -16,9 +16,9 @@ fn write(array: &dyn Array) -> Result<()> {
     let batch = RecordBatch::try_new(Arc::new(schema.clone()), vec![clone(array).into()])?;
 
     let writer = Cursor::new(vec![]);
-    let mut writer = FileWriter::try_new(writer, &schema, Default::default())?;
+    let mut writer = FileWriter::try_new(writer, &schema, None, Default::default())?;
 
-    writer.write(&batch)
+    writer.write(&batch, None)
 }
 
 fn add_benchmark(c: &mut Criterion) {

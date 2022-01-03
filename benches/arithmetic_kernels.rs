@@ -7,17 +7,18 @@ use arrow2::{
 };
 use num_traits::NumCast;
 use std::ops::{Add, Div};
+use arrow2::compute::arithmetics::basic::NativeArithmetics;
 
 fn bench_div_scalar<T>(lhs: &PrimitiveArray<T>, rhs: &T)
 where
-    T: NativeType + Div<Output = T> + NumCast,
+    T: NativeType + Div<Output = T> + NumCast + NativeArithmetics,
 {
     criterion::black_box(div_scalar(lhs, rhs));
 }
 
 fn bench_add<T>(lhs: &PrimitiveArray<T>, rhs: &PrimitiveArray<T>)
 where
-    T: NativeType + Add<Output = T> + NumCast,
+    T: NativeType + Add<Output = T> + NumCast + NativeArithmetics,
 {
     criterion::black_box(add(lhs, rhs));
 }
