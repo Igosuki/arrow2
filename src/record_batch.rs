@@ -103,10 +103,12 @@ impl RecordBatch {
                         "all columns in a record batch must have the same length".to_string(),
                     ));
                 }
-                if column.data_type() != schema.field(i).data_type() {
+                let field  = schema.field(i);
+                if column.data_type() != field.data_type() {
                     return Err(ArrowError::InvalidArgumentError(format!(
-                        "column types must match schema types, expected {:?} but found {:?} at column index {}",
-                        schema.field(i).data_type(),
+                        "column types must match schema types, expected {:?} ({:?}) but found  {:?} at column index {}",
+                        field.data_type(),
+                        field.name(),
                         column.data_type(),
                         i)));
                 }
