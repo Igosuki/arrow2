@@ -6,6 +6,7 @@ use arrow2::util::bench_util::*;
 use arrow2::{compute::arithmetics::basic::add, compute::arithmetics::basic::div_scalar};
 use num_traits::NumCast;
 use std::ops::{Add, Div};
+use arrow2::types::NativeType;
 
 fn bench_div_scalar<T>(lhs: &PrimitiveArray<T>, rhs: &T)
 where

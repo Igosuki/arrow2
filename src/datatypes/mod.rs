@@ -26,7 +26,7 @@ pub(crate) type Extension = Option<(String, Option<String>)>;
 /// which declares the in-memory representation of data.
 /// The [`DataType::Extension`] is special in that it augments a [`DataType`] with metadata to support custom types.
 /// Use `to_logical_type` to desugar such type and return its correspoding logical type.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd)]
 pub enum DataType {
     /// Null type
     Null,
