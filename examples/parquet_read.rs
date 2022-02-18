@@ -12,7 +12,8 @@ fn main() -> Result<()> {
 
     let reader = File::open(file_path)?;
     let reader = read::FileReader::try_new(reader, None, None, None, None)?;
-
+    let schema = arrow2::io::parquet::read::infer_schema(reader.metadata())?;
+    eprintln!("schema = {:?}", schema);
     let start = SystemTime::now();
     for maybe_chunk in reader {
         let columns = maybe_chunk?;
