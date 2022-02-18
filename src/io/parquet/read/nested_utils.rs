@@ -445,7 +445,11 @@ fn extend_offsets2<'a>(page: &mut NestedPage<'a>, nested: &mut NestedState, addi
     let mut rows = 0;
     while rows < additional {
         // unwrap is ok because by definition there has to be a closing statement
-        let (rep, def) = iter.next().unwrap();
+        let next_value = iter.next();
+        if next_value.is_none() {
+            break;
+        }
+        let (rep, def) = next_value.unwrap();
         if rep == 0 {
             rows += 1
         }
