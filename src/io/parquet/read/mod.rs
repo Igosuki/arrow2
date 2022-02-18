@@ -258,6 +258,17 @@ where
                 |x: i64| x,
             )
         }
+        Float64 => {
+            types.pop();
+            primitive::iter_to_arrays_nested(
+                columns.pop().unwrap(),
+                init.pop().unwrap(),
+                field.data_type().clone(),
+                chunk_size,
+                read_item,
+                |x: f64| x,
+            )
+        }
         Utf8 => {
             types.pop();
             binary::iter_to_arrays_nested::<i32, Utf8Array<i32>, _>(
